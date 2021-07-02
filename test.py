@@ -41,22 +41,94 @@ R_LEFT  = 9
 R_DOWN  = 10
 R_RIGHT = 11
 R_UP    = 12
-A       = 13
+A_BTN   = 13
 
-def record_worker(s0, s1):
-  if action_q.qsize() > 0:
-    a = action_q.get()
-  else:
-    a = NOOP
+def record_worker():
+    FPS = 10
+    max_duration = 1 / FPS
+    step_start = time.perf_counter()
+    step_end   = time.perf_counter()
+    step_duration = step_end - step_start
+    assert step_duration < max_duration, "oopsies, too slow :("
+    fuse = 0.1 - step_duration
 
-FPS = 10
-max_duration = 1/FPS
-step_start = time.perf_counter()
-step_end   = time.perf_counter()
-step_duration = step_end - step_start
-assert step_duration < max_duration, "oopsies, too slow :("
-fuse = 0.1 - step_duration
-threading.Timer(interval=fuse, function=record_worker, args=[None, None]).start()
+    r_left = r_right = r_up = r_down = l_left = l_right = l_up = l_down = r_trig = l_trig = False    
+
+    if action_q.qsize() > 0:
+        action = action_q.get()
+    else:
+        action = NOOP
+
+    ### right stick (mouse movement)
+    if action == R_LEFT:
+        r_left != r_left
+        if r_left:
+            m.move(-5, 0)
+
+    elif action == R_RIGHT:
+        r_right != r_right
+        if r_right:
+            m.move(5, 0)
+    
+    elif action == R_UP:
+        r_up != r_up
+        if r_up:
+            m.move(0, -5)
+
+    elif action == R_DOWN:
+        r_down != r_down
+        if r_down:
+            m.move(0, 5)
+
+    ### left stick (WASD)
+    elif action == L_LEFT:
+        l_left != l_left
+        if l_left:
+            k.PressKey(k.A)
+        else:
+            k.ReleaseKey(k.A)
+            
+    elif action == L_RIGHT:
+        l_right != l_right
+        if l_right:
+            k.PressKey(k.D)
+        else:
+            k.ReleaseKey(k.D)
+
+    elif action == L_UP:
+        l_up != l_up
+        if l_up:
+            k.PressKey(k.W)
+        else:
+            k.ReleaseKey(k.W)
+
+    elif action == L_DOWN:
+        l_down != l_down
+        if l_down:
+            k.PressKey(k.S)
+        else:
+            k.ReleaseKey(k.S)
+    
+    # dig, left mouse / right trigger
+    elif action == R_TRIG:
+        r_trig != r_trig
+        if r_trig:
+            m.press(mouse.Button.left)
+        else:
+            m.release(mouse.Button.left)
+
+    # place, right mouse / left trigger
+    elif action == L_TRIG:
+        l_trig != l_trig
+        if l_trig:
+            m.press(mouse.Button.right)
+        else:
+            m.release(mouse.Button.right)
+
+    else:
+        assert action == NOOP, "was expecting no-op :-/"  
+
+threading.Timer(interval=0, function=record_worker, args=[]).start()
 
 # Assumes 800x600 screen resolution & windowed game in top-left @ 400x300
 roi = {
@@ -98,6 +170,8 @@ if __name__ == "__main__":
     @j.event
     def on_button(button, pressed):
         print('button', button, pressed)
+        # SELECT is unpause. Leave in for testing / debugging.
+        # Shouldn't be observed or done by the AI agent.
         if button == 6:
             if pressed:
                 k.PressKey(k.ESC)
@@ -120,10 +194,10 @@ if __name__ == "__main__":
         if button == 13:
             if pressed:
                 # k.PressKey(k.SPACE)
-                action_q.put(A)
+                action_q.put(A_BTN)
             else:
                 # k.ReleaseKey(k.SPACE)
-                action_q.put(A)
+                action_q.put(A_BTN)
 
     old_rx_thumb = 0.0
     old_ry_thumb = 0.0
@@ -135,9 +209,7 @@ if __name__ == "__main__":
     l_stick_x_a = 0
     l_stick_y_a = 0
 
-    r_trig_a = 0
     old_r_trig = 0
-    l_trig_a = 0
     old_l_trig = 0
 
     @j.event
@@ -152,9 +224,7 @@ if __name__ == "__main__":
         global l_stick_x_a
         global l_stick_y_a
 
-        global r_trig_a
         global old_r_trig
-        global l_trig_a
         global old_l_trig
 
         stick_thresh = 0.2
@@ -164,11 +234,9 @@ if __name__ == "__main__":
         if axis == 'right_trigger':
             if value == 1.0:
                 print("right trigger on!")
-                r_trig_a = 1
                 action_q.put(R_TRIG)
             else:
                 print("right trigger off!")
-                r_trig_a = 0
                 if old_r_trig < 1.0:
                     action_q.put(R_TRIG)
             old_r_trig = value
@@ -176,11 +244,9 @@ if __name__ == "__main__":
         if axis == 'left_trigger':
             if value == 1.0:
                 print("left trigger on!")
-                l_trig_a = 1
                 action_q.put(L_TRIG)
             else:
                 print("left trigger off!")
-                l_trig_a = 0
                 if old_l_trig < 1.0:
                     action_q.put(L_TRIG)
             old_l_trig = value
@@ -276,49 +342,3 @@ if __name__ == "__main__":
     while True:
         j.dispatch_events()
         time.sleep(.01)
-        
-        ### right stick (mouse movement)
-        if r_stick_x_a == 1:
-            m.move(5, 0)
-        elif r_stick_x_a == -1:
-            m.move(-5, 0)
-
-        if r_stick_y_a == 1:
-            m.move(0, -5)
-        elif r_stick_y_a == -1:
-            m.move(0, 5)
-        
-        ### left stick (WASD)
-        if l_stick_x_a == 1:
-            k.PressKey(k.D)
-            k.ReleaseKey(k.A)
-        elif l_stick_x_a == 0:
-            k.ReleaseKey(k.D)
-            k.ReleaseKey(k.A)
-        elif l_stick_x_a == -1:
-            k.PressKey(k.A)
-            k.ReleaseKey(k.D)
-        
-        if l_stick_y_a == 1:
-            k.PressKey(k.W)
-            k.ReleaseKey(k.S)
-        elif l_stick_y_a == 0:
-            k.ReleaseKey(k.S)
-            k.ReleaseKey(k.W)
-        elif l_stick_y_a == -1:
-            k.PressKey(k.S)
-            k.ReleaseKey(k.W)
-        
-        if r_trig_a:
-            # dig, left mouse / right trigger
-            m.press(mouse.Button.left)
-        else:
-            #time.sleep(0.1)
-            m.release(mouse.Button.left)
-
-        if l_trig_a:
-            # place, right mouse / left trigger
-            m.press(mouse.Button.right)
-        else:
-            #time.sleep(0.1)
-            m.release(mouse.Button.right)
