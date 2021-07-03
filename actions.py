@@ -1,6 +1,6 @@
 '''
-  Take controller inputs, save their timestamps, send synthetic 
-  input to minecraft and sync up with grab.py & reward.py later.
+  Take controller inputs, save their timestamps, & send synthetic 
+  input to minecraft. Synced up with grab.py & reward.py later.
 '''
 
 import direct_keyboard_inputs as k
