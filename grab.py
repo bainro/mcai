@@ -33,6 +33,10 @@ if __name__ == "__main__":
     if not os.path.exists(results_dir):
         os.mkdir(results_dir)
 
+    gray_dir = os.path.join(results_dir, "gray")
+    if not os.path.exists(gray_dir):
+        os.mkdir(gray_dir)
+
     run_duration = float(sys.argv[2])
     start_time = time.perf_counter()
     elapsed = 0
@@ -44,7 +48,7 @@ if __name__ == "__main__":
         # save region of interest & ignore the transparency/alpha ch
         display_roi = np.asarray(sct.grab(roi), dtype=np.uint8)[:,:,:-1]
         gray = cv2.cvtColor(display_roi, cv2.COLOR_BGR2GRAY)
-        save_path = os.path.join(results_dir, str(i).zfill(6) + '.png')
+        save_path = os.path.join(gray_dir, str(i).zfill(6) + '.png')
         cv2.imwrite(save_path, gray)
         timestamps.append(time.time())
     

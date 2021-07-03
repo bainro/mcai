@@ -111,7 +111,7 @@ bot.on('physicsTick', () => {
 
     currHealth = target.metadata[8]
     healthDelta = currHealth - lastHealth
-    if (healthDelta != 0 && healthDelta != 20) {
+    if (healthDelta != 0 && healthDelta < 12) {
         console.log("health reward: ", healthDelta)
         datalog.push({
             reward: healthDelta,

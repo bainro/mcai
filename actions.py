@@ -25,6 +25,7 @@ R_DOWN  = 10
 R_RIGHT = 11
 R_UP    = 12
 A_BTN   = 13
+B_BTN   = 14
 
 timestamps = []
 
@@ -75,6 +76,15 @@ if __name__ == "__main__":
             else:
                 k.ReleaseKey(k.SPACE)
                 timestamps.append([A_BTN, time.time()])
+
+        # Q / drop item
+        if button == 14:
+            if pressed:
+                k.PressKey(k.Q)
+                timestamps.append([B_BTN, time.time()])
+            else:
+                k.ReleaseKey(k.Q)
+                timestamps.append([B_BTN, time.time()])
 
     old_rx_thumb = 0.0
     old_ry_thumb = 0.0

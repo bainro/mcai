@@ -19,6 +19,7 @@ S       = RED    = 0x1F # red note
 D       = YELLOW = 0x20 # yellow note
 F       = BLUE   = 0x21 # blue note
 G       = STAR   = 0x22 # star power
+Q                = 0x10 # just a Q key
 SPACE   = ORANGE = 0x39 # orange note
 R_SHIFT = STRUM  = 0x36 # right shift
 ENTER            = 0x1C
